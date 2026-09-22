@@ -26,16 +26,38 @@ const Feed = () => {
         }
     ])
 
-    useEffect(()=>{
+useEffect(() => {
 
-        axios.get(`${import.meta.env.VITE_API_URL}/posts`)
-        .then((res)=>{
-            
-            setPosts(res.data.posts)
+    const galleryToken = sessionStorage.getItem("galleryToken");
 
-        })
+    if (!galleryToken) {
+        navigate("/create-post");
+        return;
+    }
 
-    },[])
+    axios.get(
+        `${import.meta.env.VITE_API_URL}/posts`,
+        {
+            headers: {
+                "x-gallery-token": galleryToken
+            }
+        }
+    )
+    .then((res) => {
+
+        setPosts(res.data.posts);
+
+    })
+    .catch((err) => {
+
+        if (err.response?.status === 401) {
+            sessionStorage.removeItem("galleryToken");
+            navigate("/create-post");
+        }
+
+    });
+
+}, [navigate]);
 
 
 
@@ -59,13 +81,15 @@ const Feed = () => {
                 <div key= {post._id} className="post-card">
                     <div className="image-container">
                         <img
-                         src={post.image}  
-                         className={fullPhoto === post._id ? "full-photo" : ""}
-                         alt={post.caption} 
-                         onClick={()=> setFullPhoto(
-                            fullPhoto === post._id ? null : post._id
-                        )}
-                         />
+                        src={`${import.meta.env.VITE_API_URL}${post.image}`}
+                        className={fullPhoto === post._id ? "full-photo" : ""}
+                        alt={post.caption}
+                        onClick={() =>
+                            setFullPhoto(
+                                fullPhoto === post._id ? null : post._id
+                            )
+                        }
+                    />
                         <VscScreenFull
                         className='fullscreen-icon' 
                         color='black' 

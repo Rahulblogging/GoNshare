@@ -8,6 +8,7 @@ const SendFile = () =>{
 
     const[file,setFile] = useState(null);
     const [code, setCode ] = useState("");
+    const [loading, setLoading] = useState(false);
     
     // generate 6 digit code
     const generateCode = () =>{
@@ -23,39 +24,45 @@ const SendFile = () =>{
     };
 
 
-    const handleSubmit = async (e) =>{
-        e.preventDefault();
+const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        if(!file){
-            alert("Please choose a file");
-            return;
-        }
+    if (!file) {
+        alert("Please choose a file");
+        return;
+    }
 
-        if (!code){
-            alert("Please generate a code");
-            return;
-        }
+    if (!code) {
+        alert("Please generate a code");
+        return;
+    }
 
-        const formData = new FormData();
+    const formData = new FormData();
 
-        formData.append("file",file);
-        formData.append("code",code);
+    formData.append("file", file);
+    formData.append("code", code);
 
-        try{
-            const res = await axios.post(
-                `${import.meta.env.VITE_API_URL}/send-file`,
-                formData
-            );
-            
-            console.log(res.data);
-            
-            alert("File sent Successfully");
-            
-        } catch(err){
-            console.log(err);
-            alert("Error Sending File");
-        }
-    };
+    try {
+        setLoading(true);
+
+        const res = await axios.post(
+            `${import.meta.env.VITE_API_URL}/send-file`,
+            formData
+        );
+
+        console.log(res.data);
+
+        alert("File sent Successfully");
+
+    } catch (err) {
+        console.log(err);
+        alert("Error Sending File");
+
+    } finally {
+        setLoading(false);
+    }
+};
+
     return (
     <section className="create-post-section">
 
@@ -100,9 +107,19 @@ const SendFile = () =>{
            </div>
         </div>
 
-        <button type="submit">
-          Send File 📤
-        </button>
+          <button
+              type="submit"
+              disabled={loading}
+          >
+              {loading ? (
+                  <>
+                      <span className="loading-spinner"></span>
+                      Sending...
+                  </>
+              ) : (
+                  "Send File 📤"
+              )}
+          </button>
 
       </form>
 
